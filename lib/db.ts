@@ -21,7 +21,24 @@ let isInitialized = false;
 async function ensure() {
   if (isInitialized) return;
 
-  const client = await pool.connect();
+  if (!process.env.DATABASE_URL) {
+    throw new Error(
+      "DATABASE_URL is not defined in your environment variables! Please configure a PostgreSQL connection string in your .env.local file.\n" +
+      "Example:\nDATABASE_URL=postgresql://postgres:postgres@localhost:5432/carzo"
+    );
+  }
+
+  let client;
+  try {
+    client = await pool.connect();
+  } catch (err: any) {
+    console.error("❌ PostgreSQL connection failed:", err);
+    throw new Error(
+      `PostgreSQL connection failed! Please make sure your database server is running and the DATABASE_URL in your .env.local is correct.\n` +
+      `Error details: ${err.message || err}`
+    );
+  }
+
   try {
     // 1. Create products table
     await client.query(`
@@ -87,7 +104,9 @@ async function ensure() {
     }
     isInitialized = true;
   } finally {
-    client.release();
+    if (client) {
+      client.release();
+    }
   }
 }
 
