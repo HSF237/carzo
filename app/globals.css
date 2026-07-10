@@ -1,0 +1,93 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #0a0a0b;
+  --bg-soft: #121214;
+  --card: #17171a;
+  --line: #26262b;
+  --red: #e10600;
+  --red-hot: #ff2d20;
+  --text: #f4f4f5;
+  --muted: #9b9ba3;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-soft: var(--bg-soft);
+  --color-card: var(--card);
+  --color-line: var(--line);
+  --color-red-brand: var(--red);
+  --color-red-hot: var(--red-hot);
+  --color-muted: var(--muted);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.display {
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+.text-stroke {
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.25);
+  color: transparent;
+}
+
+.speedlines {
+  background-image: repeating-linear-gradient(
+    100deg,
+    transparent 0 46px,
+    rgba(225, 6, 0, 0.08) 46px 48px,
+    transparent 48px 90px,
+    rgba(255, 255, 255, 0.04) 90px 92px
+  );
+}
+
+.red-glow {
+  box-shadow: 0 0 40px -8px rgba(225, 6, 0, 0.55);
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.marquee-track {
+  animation: marquee 22s linear infinite;
+}
+
+.pcard {
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+.pcard:hover {
+  transform: translateY(-6px);
+  border-color: rgba(225, 6, 0, 0.6);
+  box-shadow: 0 18px 40px -18px rgba(225, 6, 0, 0.45);
+}
+
+.btn-red {
+  background: linear-gradient(135deg, var(--red-hot), var(--red));
+  transition: filter 0.2s ease, transform 0.15s ease;
+}
+.btn-red:hover { filter: brightness(1.15); }
+.btn-red:active { transform: scale(0.97); }
+
+.skew-chip {
+  transform: skewX(-12deg);
+}
+.skew-chip > * {
+  transform: skewX(12deg);
+}
+
+input, textarea, select {
+  color-scheme: dark;
+}

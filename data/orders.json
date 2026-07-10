@@ -1,0 +1,50 @@
+[
+  {
+    "customer": {
+      "name": "Muhammad Hasan",
+      "phone": "0949682933",
+      "email": "hsfwebdevelopers@gmail.com",
+      "address": "new building\nkunhimangalam",
+      "city": "kannur",
+      "state": "Kerala",
+      "pincode": "670309"
+    },
+    "items": [
+      {
+        "productId": "p7",
+        "name": "Rols Roys Phantom",
+        "price": 129,
+        "qty": 4
+      }
+    ],
+    "total": 595,
+    "paymentMethod": "cod",
+    "id": "CZMRF6JB2P",
+    "status": "delivered",
+    "createdAt": "2026-07-10T16:58:24.337Z"
+  },
+  {
+    "customer": {
+      "name": "Muhammad Hasan",
+      "phone": "9496829330",
+      "email": "hsfwebdevelopers@gmail.com",
+      "address": "new building\nkunhimangalam",
+      "city": "kannur",
+      "state": "Kerala",
+      "pincode": "670309"
+    },
+    "items": [
+      {
+        "productId": "p14",
+        "name": "RC Rock Crawler XT",
+        "price": 1899,
+        "qty": 1
+      }
+    ],
+    "total": 1899,
+    "paymentMethod": "cod",
+    "id": "CZMRF65XLD",
+    "status": "shipped",
+    "createdAt": "2026-07-10T16:48:00.337Z"
+  }
+]

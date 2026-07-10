@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1c2c"/>
+      <stop offset="1" stop-color="#0a0a0b"/>
+    </linearGradient>
+    <linearGradient id="car" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#3a86ff"/>
+      <stop offset="1" stop-color="#0b1c2c"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#bg)"/>
+  <g opacity="0.15" stroke="#3a86ff" stroke-width="3">
+    <line x1="0" y1="120" x2="800" y2="80"/>
+    <line x1="0" y1="500" x2="800" y2="540"/>
+  </g>
+  <ellipse cx="400" cy="430" rx="280" ry="28" fill="#000" opacity="0.45"/>
+  <g>
+    <path d="M140 400 C150 350 190 320 260 310 L310 260 C330 240 370 230 420 232 L520 240 C570 245 620 270 650 305 L680 330 C700 345 705 370 698 392 L690 400 Z" fill="url(#car)"/>
+    <path d="M330 262 L420 244 L500 250 L530 300 L340 300 Z" fill="#0a0a0b" opacity="0.8"/>
+    <circle cx="260" cy="400" r="52" fill="#111"/>
+    <circle cx="260" cy="400" r="30" fill="#2a2a2e"/>
+    <circle cx="260" cy="400" r="12" fill="#3a86ff"/>
+    <circle cx="580" cy="400" r="52" fill="#111"/>
+    <circle cx="580" cy="400" r="30" fill="#2a2a2e"/>
+    <circle cx="580" cy="400" r="12" fill="#3a86ff"/>
+    <rect x="640" y="330" width="40" height="10" rx="5" fill="#fff" opacity="0.85"/>
+  </g>
+  <g opacity="0.5" stroke="#3a86ff" stroke-width="6" stroke-linecap="round">
+    <line x1="60" y1="350" x2="130" y2="350"/>
+    <line x1="40" y1="380" x2="120" y2="380"/>
+    <line x1="70" y1="410" x2="140" y2="410"/>
+  </g>
+  <text x="400" y="540" font-family="Arial Black, Arial" font-size="44" font-weight="900" font-style="italic" fill="#ffffff" text-anchor="middle" opacity="0.9">POLICE</text>
+</svg>
