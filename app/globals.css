@@ -28,10 +28,11 @@ html {
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-jakarta), "Segoe UI", system-ui, -apple-system, sans-serif;
 }
 
 .display {
+  font-family: var(--font-orbitron), "Arial Black", sans-serif;
   font-weight: 900;
   font-style: italic;
   letter-spacing: -0.02em;

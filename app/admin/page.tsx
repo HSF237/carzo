@@ -10,8 +10,8 @@ export const dynamic = "force-dynamic";
 export default async function AdminDashboard() {
   if (!(await isAdmin())) redirect("/admin/login");
 
-  const products = getProducts();
-  const orders = getOrders();
+  const products = await getProducts();
+  const orders = await getOrders();
   const revenue = orders
     .filter((o) => o.status !== "cancelled")
     .reduce((a, o) => a + o.total, 0);

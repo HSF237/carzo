@@ -13,7 +13,7 @@ export default async function Shop({
   searchParams: Promise<{ cat?: string; q?: string; sort?: string }>;
 }) {
   const { cat, q, sort } = await searchParams;
-  let products = getProducts();
+  let products = await getProducts();
 
   if (cat === "diecast" || cat === "rc") {
     products = products.filter((p) => p.category === (cat as Category));

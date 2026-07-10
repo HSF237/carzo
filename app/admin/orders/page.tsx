@@ -9,13 +9,13 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminOrders() {
   if (!(await isAdmin())) redirect("/admin/login");
-  const orders = getOrders();
+  const orders = await getOrders();
 
   return (
     <AdminShell>
       <h1 className="display text-3xl text-white">Orders</h1>
       <p className="mt-1 text-sm text-muted">
-        {orders.length} total · all orders are Cash on Delivery
+        {orders.length} total orders
       </p>
 
       <div className="mt-6 space-y-4">

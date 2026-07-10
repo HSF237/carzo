@@ -4,6 +4,10 @@ import Footer from "@/components/Footer";
 export const metadata = { title: "Contact — Carzo" };
 
 export default function Contact() {
+  const contactPhone = process.env.NEXT_PUBLIC_CONTACT_PHONE || "+91 98765 43210";
+  const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "hello@carzo.in";
+  const contactHours = process.env.NEXT_PUBLIC_CONTACT_HOURS || "Mon–Sat, 10:00 AM – 7:00 PM IST";
+
   return (
     <>
       <Header />
@@ -17,24 +21,23 @@ export default function Contact() {
 
         <div className="mt-10 grid gap-8 md:grid-cols-2">
           <div className="space-y-4">
-            {/* TODO: replace with client's real contact details */}
             <div className="rounded-xl border border-line bg-card p-5">
               <p className="text-xs font-bold uppercase tracking-widest text-red-hot">WhatsApp / Phone</p>
-              <p className="mt-1 text-lg font-semibold text-white">+91 XXXXX XXXXX</p>
+              <p className="mt-1 text-lg font-semibold text-white">{contactPhone}</p>
             </div>
             <div className="rounded-xl border border-line bg-card p-5">
               <p className="text-xs font-bold uppercase tracking-widest text-red-hot">Email</p>
-              <p className="mt-1 text-lg font-semibold text-white">hello@carzo.in</p>
+              <p className="mt-1 text-lg font-semibold text-white">{contactEmail}</p>
             </div>
             <div className="rounded-xl border border-line bg-card p-5">
               <p className="text-xs font-bold uppercase tracking-widest text-red-hot">Hours</p>
-              <p className="mt-1 text-white">Mon–Sat, 10:00 AM – 7:00 PM IST</p>
+              <p className="mt-1 text-white">{contactHours}</p>
             </div>
           </div>
 
           <form
             className="space-y-4 rounded-xl border border-line bg-card p-6"
-            action="mailto:hello@carzo.in"
+            action={`mailto:${contactEmail}`}
             method="post"
             encType="text/plain"
           >

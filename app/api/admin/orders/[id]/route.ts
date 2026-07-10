@@ -23,7 +23,7 @@ export async function PATCH(
   if (!VALID.includes(status))
     return NextResponse.json({ error: "Invalid status" }, { status: 400 });
 
-  const updated = updateOrderStatus(id, status);
+  const updated = await updateOrderStatus(id, status);
   if (!updated)
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json(updated);

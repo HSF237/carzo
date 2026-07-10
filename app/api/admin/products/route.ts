@@ -20,10 +20,10 @@ export async function POST(req: NextRequest) {
       .replace(/(^-|-$)/g, "");
 
   // ensure unique slug
-  const existing = new Set(getProducts().map((p) => p.slug));
+  const existing = new Set((await getProducts()).map((p) => p.slug));
   if (existing.has(slug)) slug = `${slug}-${Date.now().toString(36)}`;
 
-  const product = addProduct({
+  const product = await addProduct({
     name: b.name,
     slug,
     category: b.category === "rc" ? "rc" : "diecast",

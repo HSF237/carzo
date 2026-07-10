@@ -7,8 +7,8 @@ import { inr } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
-export default function Home() {
-  const products = getProducts();
+export default async function Home() {
+  const products = await getProducts();
   const featured = products.filter((p) => p.featured).slice(0, 4);
   const diecast = products.filter((p) => p.category === "diecast").slice(0, 4);
   const rc = products.filter((p) => p.category === "rc").slice(0, 4);

@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminProducts() {
   if (!(await isAdmin())) redirect("/admin/login");
-  const products = getProducts();
+  const products = await getProducts();
 
   return (
     <AdminShell>

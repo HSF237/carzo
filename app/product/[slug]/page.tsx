@@ -15,11 +15,11 @@ export default async function ProductPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const product = getProductBySlug(slug);
+  const product = await getProductBySlug(slug);
   if (!product) notFound();
 
   const off = discountPct(product.price, product.mrp);
-  const related = getProducts()
+  const related = (await getProducts())
     .filter((p) => p.category === product.category && p.id !== product.id)
     .slice(0, 4);
 

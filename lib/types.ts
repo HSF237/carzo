@@ -36,7 +36,7 @@ export interface Order {
   };
   items: OrderItem[];
   total: number;
-  paymentMethod: "cod";
+  paymentMethod: "cod" | "online";
   status: "new" | "confirmed" | "shipped" | "delivered" | "cancelled";
   createdAt: string;
 }
