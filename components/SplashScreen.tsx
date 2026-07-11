@@ -3,18 +3,15 @@
 import { useEffect, useLayoutEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 
-const SHOWN_FLAG = "carzo_splash_shown";
-
 export default function SplashScreen() {
   const pathname = usePathname();
   const [show, setShow] = useState(false);
 
-  // Decide synchronously before paint: only on the homepage, only once per tab session
+  // Decide synchronously before paint: plays every time you land on "/",
+  // whether that's a hard reload or navigating back to the homepage —
+  // never on any other route.
   useLayoutEffect(() => {
-    if (pathname !== "/") return;
-    if (sessionStorage.getItem(SHOWN_FLAG)) return;
-    sessionStorage.setItem(SHOWN_FLAG, "1");
-    setShow(true);
+    if (pathname === "/") setShow(true);
   }, [pathname]);
 
   useEffect(() => {
