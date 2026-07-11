@@ -6,7 +6,7 @@ import { useCart } from "./CartProvider";
 import { Product } from "@/lib/types";
 
 export default function AddToCart({ product }: { product: Product }) {
-  const { add } = useCart();
+  const { add, flyToCart } = useCart();
   const router = useRouter();
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
@@ -47,8 +47,9 @@ export default function AddToCart({ product }: { product: Product }) {
         </button>
       </div>
       <button
-        onClick={() => {
+        onClick={(e) => {
           add(line, qty);
+          flyToCart(product.image, e.currentTarget);
           setAdded(true);
           setTimeout(() => setAdded(false), 1500);
         }}
@@ -57,8 +58,9 @@ export default function AddToCart({ product }: { product: Product }) {
         <span>{added ? "✓ Added!" : "Add to Cart"}</span>
       </button>
       <button
-        onClick={() => {
+        onClick={(e) => {
           add(line, qty);
+          flyToCart(product.image, e.currentTarget);
           router.push("/checkout");
         }}
         className="skew-chip rounded-sm border border-red-brand px-6 py-3 font-bold text-red-hot transition hover:bg-red-brand hover:text-white"

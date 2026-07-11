@@ -1,6 +1,6 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import AddToCart from "@/components/AddToCart";
+import ProductPurchasePanel from "@/components/ProductPurchasePanel";
 import ProductCard from "@/components/ProductCard";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -65,7 +65,7 @@ export default async function ProductPage({
             <p className="mt-6 leading-relaxed text-muted">{product.description}</p>
 
             <div className="mt-8">
-              <AddToCart product={product} />
+              <ProductPurchasePanel product={product} />
             </div>
 
             <ul className="mt-8 space-y-2 rounded-xl border border-line bg-card p-5 text-sm text-muted">

@@ -1,6 +1,7 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
+import Reveal from "@/components/Reveal";
 import Link from "next/link";
 import { Suspense } from "react";
 import { getProducts } from "@/lib/db";
@@ -62,8 +63,10 @@ async function ProductGrid({
     <>
       <p className="mt-2 text-muted">{products.length} machines ready to roll.</p>
       <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 md:gap-6">
-        {products.map((p) => (
-          <ProductCard key={p.id} product={p} />
+        {products.map((p, i) => (
+          <Reveal key={p.id} index={i % 8}>
+            <ProductCard product={p} />
+          </Reveal>
         ))}
       </div>
     </>

@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
+import Reveal from "@/components/Reveal";
 import { getProducts } from "@/lib/db";
 import { inr } from "@/lib/format";
 
@@ -37,7 +38,11 @@ async function FeaturedProducts() {
   if (!featured.length) return null;
   return (
     <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
-      {featured.map((p) => <ProductCard key={p.id} product={p} />)}
+      {featured.map((p, i) => (
+        <Reveal key={p.id} index={i}>
+          <ProductCard product={p} />
+        </Reveal>
+      ))}
     </div>
   );
 }
@@ -48,7 +53,11 @@ async function DiecastProducts() {
   if (!diecast.length) return null;
   return (
     <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
-      {diecast.map((p) => <ProductCard key={p.id} product={p} />)}
+      {diecast.map((p, i) => (
+        <Reveal key={p.id} index={i}>
+          <ProductCard product={p} />
+        </Reveal>
+      ))}
     </div>
   );
 }
@@ -59,7 +68,11 @@ async function RcProducts() {
   if (!rc.length) return null;
   return (
     <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
-      {rc.map((p) => <ProductCard key={p.id} product={p} />)}
+      {rc.map((p, i) => (
+        <Reveal key={p.id} index={i}>
+          <ProductCard product={p} />
+        </Reveal>
+      ))}
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useCart } from "./CartProvider";
 import Logo from "./Logo";
 
@@ -16,15 +16,28 @@ const nav = [
 ];
 
 export default function Header() {
-  const { count } = useCart();
+  const { count, cartIconRef } = useCart();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [kick, setKick] = useState(false);
+  const prevCount = useRef(count);
 
   // lock body scroll when menu is open
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [open]);
+
+  // Bump the cart badge whenever an item is added
+  useEffect(() => {
+    if (count > prevCount.current) {
+      setKick(true);
+      const t = setTimeout(() => setKick(false), 400);
+      prevCount.current = count;
+      return () => clearTimeout(t);
+    }
+    prevCount.current = count;
+  }, [count]);
 
   const close = () => setOpen(false);
 
@@ -64,7 +77,8 @@ export default function Header() {
             {/* Cart button */}
             <Link
               href="/cart"
-              className="skew-chip btn-red relative flex items-center gap-2 rounded-sm px-4 py-2 text-sm font-bold text-white"
+              ref={cartIconRef}
+              className={`skew-chip btn-red relative flex items-center gap-2 rounded-sm px-4 py-2 text-sm font-bold text-white ${kick ? "cart-kick" : ""}`}
             >
               <span>Cart</span>
               <span className="grid h-5 w-5 place-items-center rounded-full bg-black/30 text-xs">

@@ -1,15 +1,56 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Product } from "@/lib/types";
 import { normalizeImageUrl } from "@/lib/image";
 
 export default function ProductForm({ product }: { product?: Product }) {
   const router = useRouter();
+  const formRef = useRef<HTMLFormElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [preview, setPreview] = useState(product?.image ?? "");
+  const [description, setDescription] = useState(product?.description ?? "");
+  const [generating, setGenerating] = useState(false);
+  const [genError, setGenError] = useState("");
+
+  async function onGenerateDescription() {
+    const fd = new FormData(formRef.current!);
+    const name = fd.get("name")?.toString().trim();
+    const category = fd.get("category")?.toString();
+
+    if (!name || !category) {
+      setGenError("Fill in the product name and category first.");
+      return;
+    }
+
+    setGenerating(true);
+    setGenError("");
+    try {
+      const res = await fetch("/api/admin/generate-description", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          category,
+          price: fd.get("price")?.toString(),
+          scale: fd.get("scale")?.toString(),
+          brandLine: fd.get("brandLine")?.toString(),
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setDescription(data.description);
+      } else {
+        setGenError(data.error || "Failed to generate description.");
+      }
+    } catch {
+      setGenError("Failed to generate description.");
+    } finally {
+      setGenerating(false);
+    }
+  }
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -57,7 +98,7 @@ export default function ProductForm({ product }: { product?: Product }) {
     "mt-1 w-full rounded-md border border-line bg-bg-soft px-3 py-2 text-white focus:border-red-brand focus:outline-none";
 
   return (
-    <form onSubmit={onSubmit} className="max-w-3xl space-y-5">
+    <form ref={formRef} onSubmit={onSubmit} className="max-w-3xl space-y-5">
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="sm:col-span-2">
           <label className="text-sm text-muted">Product name *</label>
@@ -124,8 +165,26 @@ export default function ProductForm({ product }: { product?: Product }) {
           )}
         </div>
         <div className="sm:col-span-2">
-          <label className="text-sm text-muted">Description *</label>
-          <textarea name="description" required rows={4} defaultValue={product?.description} className={input} />
+          <div className="flex items-center justify-between">
+            <label className="text-sm text-muted">Description *</label>
+            <button
+              type="button"
+              onClick={onGenerateDescription}
+              disabled={generating}
+              className="text-xs font-semibold text-red-hot hover:text-red-brand disabled:opacity-50"
+            >
+              {generating ? "Generating..." : "✨ Generate with AI"}
+            </button>
+          </div>
+          <textarea
+            name="description"
+            required
+            rows={4}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className={input}
+          />
+          {genError && <p className="mt-1 text-xs text-red-hot">{genError}</p>}
         </div>
         <label className="flex items-center gap-2 text-sm text-muted">
           <input

@@ -1,5 +1,6 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import SuccessCelebration from "@/components/SuccessCelebration";
 import Link from "next/link";
 
 export const metadata = { title: "Order placed — Carzo" };
@@ -12,6 +13,7 @@ export default async function Success({
   const { id } = await searchParams;
   return (
     <>
+      <SuccessCelebration />
       <Header />
       <main className="mx-auto max-w-2xl px-4 py-24 text-center">
         <p className="text-6xl">🏆</p>
@@ -19,9 +21,10 @@ export default async function Success({
           Order <span className="text-red-hot">confirmed!</span>
         </h1>
         {id && (
-          <p className="mt-4 text-muted">
-            Your order ID is{" "}
-            <span className="rounded bg-card px-2 py-1 font-mono font-bold text-white">
+          <p className="mt-6 text-muted">
+            Your order ID
+            <br />
+            <span className="plate-reveal mt-2 inline-block rounded-md border-4 border-black bg-gradient-to-b from-yellow-300 to-yellow-400 px-4 py-1.5 font-mono text-xl font-black tracking-wider text-black shadow-lg">
               {id}
             </span>
           </p>
