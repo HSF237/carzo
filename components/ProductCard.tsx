@@ -14,7 +14,7 @@ export default function ProductCard({ product }: { product: Product }) {
         <img
           src={product.image}
           alt={product.name}
-          className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+          className="h-full w-full object-contain p-3 transition duration-300 group-hover:scale-105"
         />
         {off > 0 && (
           <span className="absolute left-3 top-3 rounded-sm bg-red-brand px-2 py-0.5 text-xs font-bold text-white">

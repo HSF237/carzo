@@ -39,7 +39,7 @@ export default async function ProductPage({
             <img
               src={product.image}
               alt={product.name}
-              className="aspect-[4/3] w-full object-cover"
+              className="aspect-[4/3] w-full object-contain p-6"
             />
           </div>
           <div>
