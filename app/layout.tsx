@@ -3,6 +3,7 @@ import { Orbitron, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/components/CartProvider";
 import SplashScreen from "@/components/SplashScreen";
+import AssistantWidget from "@/components/AssistantWidget";
 
 const orbitron = Orbitron({
   subsets: ["latin"],
@@ -30,6 +31,7 @@ export default function RootLayout({
       <body className="min-h-screen antialiased">
         <SplashScreen />
         <CartProvider>{children}</CartProvider>
+        <AssistantWidget />
       </body>
     </html>
   );
