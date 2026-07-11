@@ -93,9 +93,8 @@ export default function Home() {
             preload="auto"
             className="absolute inset-0 h-full w-full object-cover"
           >
-            {/* Swap this to hero-vertical.mp4 once the vertical edit is uploaded */}
             <source src="/videos/hero-landscape.mp4" media="(min-width: 768px)" />
-            <source src="/videos/hero-landscape.mp4" />
+            <source src="/videos/hero-vertical.mp4" />
           </video>
           <div className="absolute inset-0 bg-gradient-to-r from-bg via-bg/85 to-bg/40" />
           <div className="speedlines absolute inset-0" />
