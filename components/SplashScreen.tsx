@@ -1,34 +1,59 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-type Phase = "get" | "set" | "carzo" | "exit" | "done";
+const PHASES = ["get", "set", "carzo", "exit", "done"] as const;
+type Phase = (typeof PHASES)[number];
+
+const DELAYS: Record<Phase, number> = {
+  get:   900,
+  set:   800,
+  carzo: 1200,
+  exit:  700,
+  done:  0,
+};
 
 export default function SplashScreen() {
   const [phase, setPhase] = useState<Phase>("get");
-  const [visible, setVisible] = useState(true);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mountedRef = useRef(true);
 
   useEffect(() => {
-    // Only show once per session
-    if (sessionStorage.getItem("carzo_splash_seen")) {
-      setVisible(false);
-      return;
+    // Skip if already seen this session
+    try {
+      if (sessionStorage.getItem("carzo_splash_seen")) {
+        setPhase("done");
+        return;
+      }
+    } catch { /* SSR or private browsing */ }
+
+    mountedRef.current = true;
+
+    function advance(current: Phase) {
+      const idx = PHASES.indexOf(current);
+      const next = PHASES[idx + 1];
+      if (!next || !mountedRef.current) return;
+
+      timerRef.current = setTimeout(() => {
+        if (!mountedRef.current) return;
+        setPhase(next);
+        if (next === "done") {
+          try { sessionStorage.setItem("carzo_splash_seen", "1"); } catch {}
+        } else {
+          advance(next);
+        }
+      }, DELAYS[current]);
     }
 
-    const timers: ReturnType<typeof setTimeout>[] = [];
+    advance("get");
 
-    timers.push(setTimeout(() => setPhase("set"),   900));
-    timers.push(setTimeout(() => setPhase("carzo"), 1700));
-    timers.push(setTimeout(() => setPhase("exit"),  2900));
-    timers.push(setTimeout(() => {
-      setVisible(false);
-      sessionStorage.setItem("carzo_splash_seen", "1");
-    }, 3600));
-
-    return () => timers.forEach(clearTimeout);
+    return () => {
+      mountedRef.current = false;
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
   }, []);
 
-  if (!visible) return null;
+  if (phase === "done") return null;
 
   return (
     <div className={`splash-root ${phase === "exit" ? "splash-exit" : ""}`}>
@@ -38,16 +63,29 @@ export default function SplashScreen() {
       {/* Countdown lights row */}
       <div className="splash-lights">
         <span className={`splash-light ${phase !== "get" ? "light-on" : ""}`} />
-        <span className={`splash-light ${phase === "set" || phase === "carzo" || phase === "exit" ? "light-on" : ""}`} />
-        <span className={`splash-light light-carzo ${phase === "carzo" || phase === "exit" ? "light-on-carzo" : ""}`} />
+        <span
+          className={`splash-light ${
+            phase === "set" || phase === "carzo" || phase === "exit"
+              ? "light-on"
+              : ""
+          }`}
+        />
+        <span
+          className={`splash-light light-green ${
+            phase === "carzo" || phase === "exit" ? "light-on-go" : ""
+          }`}
+        />
       </div>
 
       {/* Main word display */}
       <div className="splash-word-wrap">
         {/* GET */}
         <span
+          key="get"
           className={`splash-word splash-get ${
-            phase === "get" ? "word-show" : phase !== "get" ? "word-gone" : ""
+            phase === "get"
+              ? "word-show"
+              : "word-gone"
           }`}
         >
           GET
@@ -55,8 +93,13 @@ export default function SplashScreen() {
 
         {/* SET */}
         <span
+          key="set"
           className={`splash-word splash-set ${
-            phase === "set" ? "word-show" : phase === "carzo" || phase === "exit" ? "word-gone" : ""
+            phase === "set"
+              ? "word-show"
+              : phase === "carzo" || phase === "exit"
+              ? "word-gone"
+              : ""
           }`}
         >
           SET
@@ -64,16 +107,21 @@ export default function SplashScreen() {
 
         {/* CARZO */}
         <span
+          key="carzo"
           className={`splash-word splash-carzo ${
             phase === "carzo" || phase === "exit" ? "word-show-carzo" : ""
           }`}
         >
-          CARZO
+          CARZO<span className="splash-exclaim">!</span>
         </span>
       </div>
 
       {/* Red rev-up bar at bottom */}
-      <div className={`splash-revbar ${phase === "carzo" || phase === "exit" ? "revbar-go" : ""}`} />
+      <div
+        className={`splash-revbar ${
+          phase === "carzo" || phase === "exit" ? "revbar-go" : ""
+        }`}
+      />
 
       <style>{`
         /* ── Root overlay ── */
@@ -91,7 +139,7 @@ export default function SplashScreen() {
         }
         .splash-exit {
           opacity: 0;
-          transform: scale(1.04);
+          transform: scale(1.06);
           pointer-events: none;
         }
 
@@ -122,26 +170,26 @@ export default function SplashScreen() {
           z-index: 1;
         }
         .splash-light {
-          width: 20px;
-          height: 20px;
+          width: 22px;
+          height: 22px;
           border-radius: 50%;
           border: 2px solid #333;
           background: #1a1a1a;
-          transition: background 0.25s ease, box-shadow 0.25s ease;
+          transition: background 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
         }
         .light-on {
           background: #e10600;
           border-color: #ff2d20;
           box-shadow: 0 0 18px 4px rgba(225,6,0,0.75);
         }
-        .light-carzo {
-          width: 24px;
-          height: 24px;
+        .light-green {
+          width: 26px;
+          height: 26px;
         }
-        .light-on-carzo {
-          background: #ff2d20;
-          border-color: #ff6b00;
-          box-shadow: 0 0 28px 8px rgba(255,100,0,0.8);
+        .light-on-go {
+          background: #00e676;
+          border-color: #69f0ae;
+          box-shadow: 0 0 28px 8px rgba(0,230,118,0.8);
         }
 
         /* ── Word container ── */
@@ -149,6 +197,7 @@ export default function SplashScreen() {
           position: relative;
           z-index: 1;
           height: 120px;
+          width: 100%;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -163,8 +212,6 @@ export default function SplashScreen() {
           text-transform: uppercase;
           letter-spacing: -0.02em;
           opacity: 0;
-          transform: translateY(30px) scale(0.85);
-          transition: opacity 0.0s, transform 0.0s;
           white-space: nowrap;
           user-select: none;
         }
@@ -183,36 +230,39 @@ export default function SplashScreen() {
         }
         /* CARZO — full red gradient */
         .splash-carzo {
-          font-size: clamp(56px, 14vw, 100px);
+          font-size: clamp(60px, 15vw, 110px);
           background: linear-gradient(135deg, #ff2d20 0%, #e10600 50%, #ff6b00 100%);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           background-clip: text;
-          filter: drop-shadow(0 0 32px rgba(225,6,0,0.7));
+          filter: drop-shadow(0 0 40px rgba(225,6,0,0.8));
+        }
+        .splash-exclaim {
+          -webkit-text-fill-color: #ff6b00;
         }
 
-        /* ── Show / hide transitions ── */
+        /* ── Show / hide animations ── */
         .word-show {
-          animation: wordIn 0.35s cubic-bezier(.2,1.4,.4,1) forwards;
+          animation: wordIn 0.4s cubic-bezier(.2,1.4,.4,1) forwards;
         }
         .word-gone {
-          animation: wordOut 0.2s ease-in forwards;
+          animation: wordOut 0.25s ease-in forwards;
         }
         .word-show-carzo {
-          animation: carzoIn 0.5s cubic-bezier(.15,1.5,.4,1) forwards;
+          animation: carzoIn 0.55s cubic-bezier(.15,1.5,.4,1) forwards;
         }
 
         @keyframes wordIn {
-          from { opacity: 0; transform: translateY(40px) scale(0.8); }
-          to   { opacity: 1; transform: translateY(0)   scale(1);   }
+          0%   { opacity: 0; transform: translateY(50px) scale(0.7); }
+          100% { opacity: 1; transform: translateY(0)    scale(1);   }
         }
         @keyframes wordOut {
-          from { opacity: 1; transform: translateY(0)    scale(1); }
-          to   { opacity: 0; transform: translateY(-30px) scale(0.9); }
+          0%   { opacity: 1; transform: translateY(0)     scale(1);   }
+          100% { opacity: 0; transform: translateY(-40px) scale(0.85); }
         }
         @keyframes carzoIn {
-          0%   { opacity: 0; transform: translateX(-60px) scale(0.7) skewX(-15deg); }
-          60%  { opacity: 1; transform: translateX(6px)   scale(1.06) skewX(-4deg); }
+          0%   { opacity: 0; transform: translateX(-80px) scale(0.6) skewX(-18deg); }
+          50%  { opacity: 1; transform: translateX(8px)   scale(1.08) skewX(-5deg); }
           100% { opacity: 1; transform: translateX(0)     scale(1)    skewX(0deg);  }
         }
 
@@ -224,8 +274,8 @@ export default function SplashScreen() {
           height: 4px;
           width: 0%;
           background: linear-gradient(90deg, #e10600, #ff2d20, #ff6b00);
-          transition: width 0.8s cubic-bezier(.4,0,.2,1);
-          box-shadow: 0 0 20px 4px rgba(225,6,0,0.6);
+          transition: width 0.9s cubic-bezier(.4,0,.2,1);
+          box-shadow: 0 0 24px 6px rgba(225,6,0,0.6);
         }
         .revbar-go {
           width: 100%;
