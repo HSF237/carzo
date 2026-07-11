@@ -1,4 +1,3 @@
-import { unstable_cache } from "next/cache";
 import { db } from "./firebase";
 import {
   collection,
@@ -84,12 +83,24 @@ async function _getProducts(): Promise<Product[]> {
   }
 }
 
-// Cached version — Firestore is hit at most once per 60 seconds
-export const getProducts = unstable_cache(
-  _getProducts,
-  ["products"],
-  { revalidate: 60, tags: ["products"] }
-);
+// ── In-memory TTL cache (survives across warm invocations) ──────────────────
+let productsCache: { data: Product[]; ts: number } | null = null;
+const CACHE_TTL_MS = 60_000; // 60 seconds
+
+export async function getProducts(): Promise<Product[]> {
+  // Return cached data if still fresh
+  if (productsCache && Date.now() - productsCache.ts < CACHE_TTL_MS) {
+    return productsCache.data;
+  }
+  const data = await _getProducts();
+  productsCache = { data, ts: Date.now() };
+  return data;
+}
+
+/** Call this after any write so the next read hits Firestore fresh */
+export function invalidateProductsCache() {
+  productsCache = null;
+}
 
 export async function getProductBySlug(slug: string): Promise<Product | undefined> {
   await ensure();
@@ -144,15 +155,9 @@ export async function addProduct(p: Omit<Product, "id" | "createdAt">): Promise<
   await ensure();
   const id = "p" + Date.now().toString(36);
   const createdAt = new Date().toISOString();
-  const product: Product = {
-    ...p,
-    id,
-    createdAt
-  };
-  await setDoc(doc(db, "products", id), {
-    ...product,
-    featured: !!p.featured
-  });
+  const product: Product = { ...p, id, createdAt };
+  await setDoc(doc(db, "products", id), { ...product, featured: !!p.featured });
+  invalidateProductsCache();
   return product;
 }
 
@@ -160,17 +165,15 @@ export async function updateProduct(id: string, patch: Partial<Product>): Promis
   await ensure();
   const current = await getProductById(id);
   if (!current) return undefined;
-
   const updated = { ...current, ...patch };
-  await setDoc(doc(db, "products", id), {
-    ...updated,
-    featured: !!updated.featured
-  });
+  await setDoc(doc(db, "products", id), { ...updated, featured: !!updated.featured });
+  invalidateProductsCache();
   return updated;
 }
 
 export async function deleteProduct(id: string): Promise<boolean> {
   await ensure();
+  invalidateProductsCache();
   const docRef = doc(db, "products", id);
   const snap = await getDoc(docRef);
   if (!snap.exists()) return false;

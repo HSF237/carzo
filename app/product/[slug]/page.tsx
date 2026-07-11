@@ -7,7 +7,7 @@ import { notFound } from "next/navigation";
 import { getProductBySlug, getProducts } from "@/lib/db";
 import { inr, discountPct } from "@/lib/format";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export default async function ProductPage({
   params,
