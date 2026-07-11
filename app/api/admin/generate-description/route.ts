@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAdmin } from "@/lib/auth";
-import Anthropic from "@anthropic-ai/sdk";
+
+const GEMINI_MODEL = "gemini-3.5-flash";
 
 export async function POST(req: NextRequest) {
   if (!(await isAdmin())) {
@@ -16,7 +17,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  if (!process.env.ANTHROPIC_API_KEY) {
+  if (!process.env.GEMINI_API_KEY) {
     return NextResponse.json(
       { error: "AI description generation isn't configured yet." },
       { status: 500 }
@@ -34,20 +35,33 @@ export async function POST(req: NextRequest) {
     .join("\n");
 
   try {
-    const client = new Anthropic();
-    const msg = await client.messages.create({
-      model: "claude-opus-4-8",
-      max_tokens: 300,
-      output_config: { effort: "low" },
-      messages: [
-        {
-          role: "user",
-          content: `Write a punchy, exciting 2-3 sentence e-commerce product description for a die-cast/RC car store called Carzo. No markdown, no surrounding quotes, no headings. Product details:\n${details}`,
-        },
-      ],
-    });
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: `Write a punchy, exciting 2-3 sentence e-commerce product description for a die-cast/RC car store called Carzo. No markdown, no surrounding quotes, no headings. Product details:\n${details}`,
+                },
+              ],
+            },
+          ],
+        }),
+      }
+    );
 
-    const text = msg.content.find((b) => b.type === "text")?.text?.trim() ?? "";
+    if (!res.ok) {
+      const errBody = await res.text();
+      console.error("Gemini API error:", res.status, errBody);
+      return NextResponse.json({ error: "Failed to generate description." }, { status: 500 });
+    }
+
+    const data = await res.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? "";
     if (!text) {
       return NextResponse.json({ error: "AI returned an empty description." }, { status: 500 });
     }
