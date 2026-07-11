@@ -28,6 +28,8 @@ export async function POST(req: NextRequest) {
         ADMIN_EMAIL.toLowerCase(),
         "hsfwebdevelopers@gmail.com",
         "admin@carzo.in",
+        "akpalameen8@gmail.com",
+        "zerox9861@gmail.com",
       ];
 
       if (userEmail && allowedEmails.includes(userEmail.toLowerCase())) {
