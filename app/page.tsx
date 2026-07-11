@@ -84,8 +84,22 @@ export default function Home() {
       <Header />
       <main>
         {/* Hero — renders INSTANTLY, no data needed */}
-        <section className="speedlines relative overflow-hidden border-b border-line">
-          <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-20 md:grid-cols-2 md:py-28">
+        <section className="relative overflow-hidden border-b border-line">
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            className="absolute inset-0 h-full w-full object-cover"
+          >
+            {/* Swap this to hero-vertical.mp4 once the vertical edit is uploaded */}
+            <source src="/videos/hero-landscape.mp4" media="(min-width: 768px)" />
+            <source src="/videos/hero-landscape.mp4" />
+          </video>
+          <div className="absolute inset-0 bg-gradient-to-r from-bg via-bg/85 to-bg/40" />
+          <div className="speedlines absolute inset-0" />
+          <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-4 py-20 md:grid-cols-2 md:py-28">
             <div>
               <p className="skew-chip inline-block rounded-sm bg-red-brand px-3 py-1 text-xs font-bold uppercase tracking-widest text-white">
                 <span>🏁 New drops every week</span>
