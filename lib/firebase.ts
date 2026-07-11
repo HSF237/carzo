@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import { initializeFirestore, getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
@@ -13,5 +13,15 @@ const firebaseConfig = {
 };
 
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-export const db = getFirestore(app);
+
+// The Firestore Web SDK's default transport (WebChannel/streaming) never
+// resolves on Vercel's serverless Node runtime, which hangs every server-side
+// read (getProducts/getOrders) forever. Force long-polling on the server —
+// the browser client (unused for Firestore, only used for Auth) is unaffected.
+export const db =
+  typeof window === "undefined"
+    ? initializeFirestore(app, {
+        experimentalForceLongPolling: true,
+      })
+    : getFirestore(app);
 export const auth = getAuth(app);

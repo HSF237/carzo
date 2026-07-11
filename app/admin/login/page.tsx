@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Logo from "@/components/Logo";
 import { auth } from "@/lib/firebase";
-import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 
 export default function AdminLogin() {
   const router = useRouter();
@@ -56,24 +56,11 @@ export default function AdminLogin() {
     setError("");
 
     try {
-      let idToken = "";
-      try {
-        // Try Firebase Auth email/pass first
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        idToken = await userCredential.user.getIdToken();
-      } catch (fbErr) {
-        console.log("Firebase Auth credentials check bypassed, trying backend local fallback...");
-      }
-
-      // Send to server (server will verify token, or fallback to simple credentials check)
+      // Go directly to backend — no Firebase Auth round-trip needed
       const res = await fetch("/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          idToken: idToken || undefined,
-          email,
-          password,
-        }),
+        body: JSON.stringify({ email, password }),
       });
 
       if (res.ok) {
