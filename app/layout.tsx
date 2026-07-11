@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Orbitron, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/components/CartProvider";
+import SplashScreen from "@/components/SplashScreen";
 
 const orbitron = Orbitron({
   subsets: ["latin"],
@@ -27,6 +28,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${orbitron.variable} ${plusJakartaSans.variable}`}>
       <body className="min-h-screen antialiased">
+        <SplashScreen />
         <CartProvider>{children}</CartProvider>
       </body>
     </html>
