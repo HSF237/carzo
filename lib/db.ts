@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import { db } from "./firebase";
 import {
   collection,
@@ -51,7 +52,8 @@ async function ensure() {
 }
 
 // ---------- Products ----------
-export async function getProducts(): Promise<Product[]> {
+// Raw fetcher
+async function _getProducts(): Promise<Product[]> {
   await ensure();
   try {
     const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
@@ -77,10 +79,17 @@ export async function getProducts(): Promise<Product[]> {
     });
     return products;
   } catch (err) {
-    console.error("Firestore getProducts failed, falling back to empty list:", err);
+    console.error("Firestore getProducts failed:", err);
     return [];
   }
 }
+
+// Cached version — Firestore is hit at most once per 60 seconds
+export const getProducts = unstable_cache(
+  _getProducts,
+  ["products"],
+  { revalidate: 60, tags: ["products"] }
+);
 
 export async function getProductBySlug(slug: string): Promise<Product | undefined> {
   await ensure();

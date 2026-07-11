@@ -5,7 +5,7 @@ import Link from "next/link";
 import { getProducts } from "@/lib/db";
 import { Category } from "@/lib/types";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export default async function Shop({
   searchParams,
