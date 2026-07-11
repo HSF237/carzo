@@ -1,23 +1,11 @@
-import { db } from "./firebase";
-import {
-  collection,
-  getDocs,
-  getDoc,
-  doc,
-  setDoc,
-  updateDoc,
-  deleteDoc,
-  query,
-  where,
-  orderBy,
-  writeBatch
-} from "firebase/firestore";
+import { adminDb } from "./firebase-admin";
 import { Product, Order, OrderItem } from "./types";
 import { seedProducts } from "./seed";
 
 /**
  * Production-ready Firebase Firestore database data layer.
- * Replaces the SQL database implementation and supports auto-seeding.
+ * Uses the Firebase Admin SDK — reliable in serverless environments,
+ * unlike the client SDK's browser-oriented streaming transport.
  */
 
 // Run seeding once when the module loads — doesn't block queries
@@ -27,12 +15,12 @@ let seedingPromise: Promise<void> | null = null;
 async function seedIfNeeded() {
   if (seedingDone) return;
   try {
-    const productsSnapshot = await getDocs(collection(db, "products"));
+    const productsSnapshot = await adminDb.collection("products").get();
     if (productsSnapshot.empty) {
       console.log("🌱 Seeding Firestore products database...");
-      const batch = writeBatch(db);
+      const batch = adminDb.batch();
       for (const p of seedProducts) {
-        const docRef = doc(db, "products", p.id);
+        const docRef = adminDb.collection("products").doc(p.id);
         batch.set(docRef, { ...p, featured: !!p.featured });
       }
       await batch.commit();
@@ -55,8 +43,7 @@ async function ensure() {
 async function _getProducts(): Promise<Product[]> {
   await ensure();
   try {
-    const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
-    const snap = await getDocs(q);
+    const snap = await adminDb.collection("products").orderBy("createdAt", "desc").get();
     const products: Product[] = [];
     snap.forEach((doc) => {
       const data = doc.data();
@@ -104,8 +91,7 @@ export function invalidateProductsCache() {
 
 export async function getProductBySlug(slug: string): Promise<Product | undefined> {
   await ensure();
-  const q = query(collection(db, "products"), where("slug", "==", slug));
-  const snap = await getDocs(q);
+  const snap = await adminDb.collection("products").where("slug", "==", slug).get();
   if (snap.empty) return undefined;
 
   const doc = snap.docs[0];
@@ -129,11 +115,10 @@ export async function getProductBySlug(slug: string): Promise<Product | undefine
 
 export async function getProductById(id: string): Promise<Product | undefined> {
   await ensure();
-  const docRef = doc(db, "products", id);
-  const snap = await getDoc(docRef);
-  if (!snap.exists()) return undefined;
+  const snap = await adminDb.collection("products").doc(id).get();
+  if (!snap.exists) return undefined;
 
-  const data = snap.data();
+  const data = snap.data()!;
   return {
     id: snap.id,
     slug: data.slug,
@@ -156,7 +141,7 @@ export async function addProduct(p: Omit<Product, "id" | "createdAt">): Promise<
   const id = "p" + Date.now().toString(36);
   const createdAt = new Date().toISOString();
   const product: Product = { ...p, id, createdAt };
-  await setDoc(doc(db, "products", id), { ...product, featured: !!p.featured });
+  await adminDb.collection("products").doc(id).set({ ...product, featured: !!p.featured });
   invalidateProductsCache();
   return product;
 }
@@ -166,7 +151,7 @@ export async function updateProduct(id: string, patch: Partial<Product>): Promis
   const current = await getProductById(id);
   if (!current) return undefined;
   const updated = { ...current, ...patch };
-  await setDoc(doc(db, "products", id), { ...updated, featured: !!updated.featured });
+  await adminDb.collection("products").doc(id).set({ ...updated, featured: !!updated.featured });
   invalidateProductsCache();
   return updated;
 }
@@ -174,10 +159,10 @@ export async function updateProduct(id: string, patch: Partial<Product>): Promis
 export async function deleteProduct(id: string): Promise<boolean> {
   await ensure();
   invalidateProductsCache();
-  const docRef = doc(db, "products", id);
-  const snap = await getDoc(docRef);
-  if (!snap.exists()) return false;
-  await deleteDoc(docRef);
+  const docRef = adminDb.collection("products").doc(id);
+  const snap = await docRef.get();
+  if (!snap.exists) return false;
+  await docRef.delete();
   return true;
 }
 
@@ -185,8 +170,7 @@ export async function deleteProduct(id: string): Promise<boolean> {
 export async function getOrders(): Promise<Order[]> {
   await ensure();
   try {
-    const q = query(collection(db, "orders"), orderBy("createdAt", "desc"));
-    const snap = await getDocs(q);
+    const snap = await adminDb.collection("orders").orderBy("createdAt", "desc").get();
     const orders: Order[] = [];
     snap.forEach((doc) => {
       const data = doc.data();
@@ -220,19 +204,19 @@ export async function addOrder(o: Omit<Order, "id" | "createdAt" | "status"> & {
     createdAt
   };
 
-  const batch = writeBatch(db);
+  const batch = adminDb.batch();
 
-  const orderRef = doc(db, "orders", id);
+  const orderRef = adminDb.collection("orders").doc(id);
   batch.set(orderRef, {
     ...order,
     paymentId: o.paymentId || null
   });
 
   for (const item of o.items) {
-    const productRef = doc(db, "products", item.productId);
-    const productSnap = await getDoc(productRef);
-    if (productSnap.exists()) {
-      const currentStock = Number(productSnap.data().stock || 0);
+    const productRef = adminDb.collection("products").doc(item.productId);
+    const productSnap = await productRef.get();
+    if (productSnap.exists) {
+      const currentStock = Number(productSnap.data()?.stock || 0);
       batch.update(productRef, {
         stock: Math.max(0, currentStock - item.qty)
       });
@@ -245,13 +229,13 @@ export async function addOrder(o: Omit<Order, "id" | "createdAt" | "status"> & {
 
 export async function updateOrderStatus(id: string, status: Order["status"]): Promise<Order | undefined> {
   await ensure();
-  const orderRef = doc(db, "orders", id);
-  const orderSnap = await getDoc(orderRef);
-  if (!orderSnap.exists()) return undefined;
+  const orderRef = adminDb.collection("orders").doc(id);
+  const orderSnap = await orderRef.get();
+  if (!orderSnap.exists) return undefined;
 
-  await updateDoc(orderRef, { status });
+  await orderRef.update({ status });
 
-  const data = orderSnap.data();
+  const data = orderSnap.data()!;
   return {
     id,
     customer: data.customer,
