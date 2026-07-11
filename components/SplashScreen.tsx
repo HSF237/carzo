@@ -1,17 +1,30 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+
+const SHOWN_FLAG = "carzo_splash_shown";
 
 export default function SplashScreen() {
-  const [hidden, setHidden] = useState(false);
+  const pathname = usePathname();
+  const [show, setShow] = useState(false);
+
+  // Decide synchronously before paint: only on the homepage, only once per tab session
+  useLayoutEffect(() => {
+    if (pathname !== "/") return;
+    if (sessionStorage.getItem(SHOWN_FLAG)) return;
+    sessionStorage.setItem(SHOWN_FLAG, "1");
+    setShow(true);
+  }, [pathname]);
 
   useEffect(() => {
+    if (!show) return;
     // Single timer — just remove from DOM after animation completes
-    const t = setTimeout(() => setHidden(true), 4000);
+    const t = setTimeout(() => setShow(false), 4000);
     return () => clearTimeout(t);
-  }, []);
+  }, [show]);
 
-  if (hidden) return null;
+  if (!show) return null;
 
   return (
     <div className="splash-root">
