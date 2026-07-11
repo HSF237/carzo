@@ -18,13 +18,21 @@ export default function AdminLogin() {
     setError("");
     try {
       const provider = new GoogleAuthProvider();
-      const userCredential = await signInWithPopup(auth, provider);
-      const idToken = await userCredential.user.getIdToken();
+      // Request the ID token scope explicitly
+      provider.addScope("openid");
+      provider.addScope("email");
+
+      const result = await signInWithPopup(auth, provider);
+
+      // Get the Google OAuth credential's ID token (not Firebase's token)
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      const googleIdToken = credential?.idToken;
+      const userEmail = result.user.email;
 
       const res = await fetch("/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idToken }),
+        body: JSON.stringify({ idToken: googleIdToken, email: userEmail }),
       });
 
       if (res.ok) {
