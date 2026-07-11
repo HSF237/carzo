@@ -1,29 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ADMIN_EMAIL, ADMIN_PASSWORD, SESSION_COOKIE, sign } from "@/lib/auth";
-import { getApps, initializeApp } from "firebase-admin/app";
-import { getAuth } from "firebase-admin/auth";
-
-if (getApps().length === 0) {
-  try {
-    initializeApp({
-      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-    });
-  } catch (initErr) {
-    console.error("Failed to initialize Firebase Admin SDK:", initErr);
-  }
-}
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { idToken, email, password } = body ?? {};
 
-    // 1. Firebase Auth Token Verification
+    // 1. Google ID Token Verification via tokeninfo endpoint (no Admin SDK needed)
     if (idToken) {
-      const decodedToken = await getAuth().verifyIdToken(idToken);
-      const userEmail = decodedToken.email;
+      const tokenInfoRes = await fetch(
+        `https://oauth2.googleapis.com/tokeninfo?id_token=${idToken}`
+      );
 
-      // Allow config-defined email, as well as developer/support email
+      if (!tokenInfoRes.ok) {
+        return NextResponse.json({ error: "Invalid Google token" }, { status: 401 });
+      }
+
+      const tokenInfo = await tokenInfoRes.json();
+      const userEmail = tokenInfo.email as string | undefined;
+
+      if (!userEmail || !tokenInfo.email_verified) {
+        return NextResponse.json({ error: "Google email not verified" }, { status: 401 });
+      }
+
+      // Allow config-defined email, as well as developer/support emails
       const allowedEmails = [
         ADMIN_EMAIL.toLowerCase(),
         "hsfwebdevelopers@gmail.com",
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
         "zerox9861@gmail.com",
       ];
 
-      if (userEmail && allowedEmails.includes(userEmail.toLowerCase())) {
+      if (allowedEmails.includes(userEmail.toLowerCase())) {
         const res = NextResponse.json({ ok: true });
         res.cookies.set(SESSION_COOKIE, sign(`admin:${userEmail}:${Date.now()}`), {
           httpOnly: true,
@@ -42,6 +42,7 @@ export async function POST(req: NextRequest) {
         });
         return res;
       }
+
       return NextResponse.json({ error: "Unauthorized email address" }, { status: 403 });
     }
 
@@ -66,3 +67,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Authentication failed: " + err.message }, { status: 500 });
   }
 }
+
