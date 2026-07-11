@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s https://carzocars.vercel.app/shop --max-time 20)",
+      "Bash(curl -s https://carzocars.vercel.app/shop --max-time 20 -o /tmp/checknow.html -w \"HTTP:%{http_code}\\\\n\")"
+    ]
+  }
+}
