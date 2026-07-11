@@ -19,7 +19,7 @@ function parsePrivateKey(raw: string | undefined): string | undefined {
 // Falls back to the known project ID in case the env var is unset/stale in
 // a given deployment target — project IDs aren't secret (they're already
 // shipped to the browser via NEXT_PUBLIC_FIREBASE_PROJECT_ID).
-const PROJECT_ID = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "carzo-fa9f9";
+const PROJECT_ID = (process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "carzo-fa9f9").trim();
 
 const app =
   getApps().length > 0
@@ -27,7 +27,7 @@ const app =
     : initializeApp({
         credential: cert({
           projectId: PROJECT_ID,
-          clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+          clientEmail: process.env.FIREBASE_CLIENT_EMAIL?.trim(),
           privateKey: parsePrivateKey(process.env.FIREBASE_PRIVATE_KEY),
         }),
       });
