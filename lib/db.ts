@@ -1,6 +1,7 @@
 import { adminDb } from "./firebase-admin";
 import { Product, Order, OrderItem } from "./types";
 import { seedProducts } from "./seed";
+import { normalizeImageUrl } from "./image";
 
 /**
  * Production-ready Firebase Firestore database data layer.
@@ -140,7 +141,7 @@ export async function addProduct(p: Omit<Product, "id" | "createdAt">): Promise<
   await ensure();
   const id = "p" + Date.now().toString(36);
   const createdAt = new Date().toISOString();
-  const product: Product = { ...p, id, createdAt };
+  const product: Product = { ...p, id, createdAt, image: normalizeImageUrl(p.image) };
   await adminDb.collection("products").doc(id).set({ ...product, featured: !!p.featured });
   invalidateProductsCache();
   return product;
@@ -150,6 +151,7 @@ export async function updateProduct(id: string, patch: Partial<Product>): Promis
   await ensure();
   const current = await getProductById(id);
   if (!current) return undefined;
+  if (patch.image) patch.image = normalizeImageUrl(patch.image);
   const updated = { ...current, ...patch };
   await adminDb.collection("products").doc(id).set({ ...updated, featured: !!updated.featured });
   invalidateProductsCache();

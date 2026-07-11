@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Product } from "@/lib/types";
+import { normalizeImageUrl } from "@/lib/image";
 
 export default function ProductForm({ product }: { product?: Product }) {
   const router = useRouter();
@@ -109,9 +110,9 @@ export default function ProductForm({ product }: { product?: Product }) {
             name="image"
             required
             defaultValue={product?.image}
-            placeholder="https://... paste a direct image link"
+            placeholder="https://... paste a direct image link or Google Drive share link"
             className={input}
-            onChange={(e) => setPreview(e.target.value)}
+            onChange={(e) => setPreview(normalizeImageUrl(e.target.value))}
           />
           {preview && (
             // eslint-disable-next-line @next/next/no-img-element
