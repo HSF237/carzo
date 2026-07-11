@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
@@ -7,16 +8,69 @@ import { inr } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
-export default async function Home() {
+// ── Skeleton card for loading state ─────────────────────────────────────────
+function CardSkeleton() {
+  return (
+    <div className="rounded-xl border border-line bg-card overflow-hidden animate-pulse">
+      <div className="aspect-[4/3] bg-bg-soft" />
+      <div className="p-4 space-y-2">
+        <div className="h-2 w-1/3 rounded bg-line" />
+        <div className="h-4 w-3/4 rounded bg-line" />
+        <div className="h-4 w-1/4 rounded bg-line" />
+      </div>
+    </div>
+  );
+}
+
+function GridSkeleton({ count = 4 }: { count?: number }) {
+  return (
+    <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
+      {Array.from({ length: count }).map((_, i) => <CardSkeleton key={i} />)}
+    </div>
+  );
+}
+
+// ── Async product sections (stream in after shell) ───────────────────────────
+async function FeaturedProducts() {
   const products = await getProducts();
   const featured = products.filter((p) => p.featured).slice(0, 4);
-  const diecast = products.filter((p) => p.category === "diecast").slice(0, 4);
-  const rc = products.filter((p) => p.category === "rc").slice(0, 4);
+  if (!featured.length) return null;
+  return (
+    <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
+      {featured.map((p) => <ProductCard key={p.id} product={p} />)}
+    </div>
+  );
+}
 
+async function DiecastProducts() {
+  const products = await getProducts();
+  const diecast = products.filter((p) => p.category === "diecast").slice(0, 4);
+  if (!diecast.length) return null;
+  return (
+    <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
+      {diecast.map((p) => <ProductCard key={p.id} product={p} />)}
+    </div>
+  );
+}
+
+async function RcProducts() {
+  const products = await getProducts();
+  const rc = products.filter((p) => p.category === "rc").slice(0, 4);
+  if (!rc.length) return null;
+  return (
+    <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
+      {rc.map((p) => <ProductCard key={p.id} product={p} />)}
+    </div>
+  );
+}
+
+// ── Page ─────────────────────────────────────────────────────────────────────
+export default function Home() {
   return (
     <>
       <Header />
       <main>
+        {/* Hero — renders INSTANTLY, no data needed */}
         <section className="speedlines relative overflow-hidden border-b border-line">
           <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-20 md:grid-cols-2 md:py-28">
             <div>
@@ -57,15 +111,11 @@ export default async function Home() {
           </div>
         </section>
 
+        {/* Marquee — renders INSTANTLY */}
         <div className="overflow-hidden border-b border-line bg-red-brand py-2">
           <div className="marquee-track flex w-max gap-8 whitespace-nowrap text-sm font-bold uppercase tracking-widest text-white">
             {Array.from({ length: 2 }).map((_, i) => (
               <span key={i} className="flex gap-8">
-                <span>🚚 Free shipping over ₹999</span>
-                <span>💵 Cash on Delivery</span>
-                <span>🏎️ 1:64 · 1:43 · 1:18 scales</span>
-                <span>🎮 RC cars up to 35 km/h</span>
-                <span>🛡️ 7-day replacement</span>
                 <span>🚚 Free shipping over ₹999</span>
                 <span>💵 Cash on Delivery</span>
                 <span>🏎️ 1:64 · 1:43 · 1:18 scales</span>
@@ -76,6 +126,7 @@ export default async function Home() {
           </div>
         </div>
 
+        {/* Featured — streams in as soon as Firebase responds */}
         <section className="mx-auto max-w-7xl px-4 py-16">
           <div className="flex items-end justify-between">
             <h2 className="display text-3xl text-white">
@@ -85,13 +136,12 @@ export default async function Home() {
               View all →
             </Link>
           </div>
-          <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
-            {featured.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
-          </div>
+          <Suspense fallback={<GridSkeleton count={4} />}>
+            <FeaturedProducts />
+          </Suspense>
         </section>
 
+        {/* Category banners — no data, instant */}
         <section className="mx-auto grid max-w-7xl gap-6 px-4 md:grid-cols-2">
           <Link
             href="/shop?cat=diecast"
@@ -131,6 +181,7 @@ export default async function Home() {
           </Link>
         </section>
 
+        {/* Diecast section */}
         <section className="mx-auto max-w-7xl px-4 py-16">
           <div className="flex items-end justify-between">
             <h2 className="display text-3xl text-white">
@@ -140,13 +191,12 @@ export default async function Home() {
               All scale models →
             </Link>
           </div>
-          <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
-            {diecast.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
-          </div>
+          <Suspense fallback={<GridSkeleton count={4} />}>
+            <DiecastProducts />
+          </Suspense>
         </section>
 
+        {/* RC section */}
         <section className="mx-auto max-w-7xl px-4 pb-16">
           <div className="flex items-end justify-between">
             <h2 className="display text-3xl text-white">
@@ -156,13 +206,12 @@ export default async function Home() {
               All RC cars →
             </Link>
           </div>
-          <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
-            {rc.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
-          </div>
+          <Suspense fallback={<GridSkeleton count={4} />}>
+            <RcProducts />
+          </Suspense>
         </section>
 
+        {/* Trust badges — instant */}
         <section className="border-t border-line bg-bg-soft">
           <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 text-center md:grid-cols-3">
             <div>

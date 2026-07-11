@@ -2,17 +2,34 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
 import Link from "next/link";
+import { Suspense } from "react";
 import { getProducts } from "@/lib/db";
 import { Category } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
-export default async function Shop({
-  searchParams,
+function CardSkeleton() {
+  return (
+    <div className="rounded-xl border border-line bg-card overflow-hidden animate-pulse">
+      <div className="aspect-[4/3] bg-bg-soft" />
+      <div className="p-4 space-y-2">
+        <div className="h-2 w-1/3 rounded bg-line" />
+        <div className="h-4 w-3/4 rounded bg-line" />
+        <div className="h-4 w-1/4 rounded bg-line" />
+      </div>
+    </div>
+  );
+}
+
+async function ProductGrid({
+  cat,
+  q,
+  sort,
 }: {
-  searchParams: Promise<{ cat?: string; q?: string; sort?: string }>;
+  cat?: string;
+  q?: string;
+  sort?: string;
 }) {
-  const { cat, q, sort } = await searchParams;
   let products = await getProducts();
 
   if (cat === "diecast" || cat === "rc") {
@@ -30,6 +47,36 @@ export default async function Shop({
   if (sort === "price-asc") products = [...products].sort((a, b) => a.price - b.price);
   if (sort === "price-desc") products = [...products].sort((a, b) => b.price - a.price);
 
+  if (products.length === 0) {
+    return (
+      <div className="mt-16 rounded-xl border border-line bg-card p-12 text-center text-muted">
+        No cars matched your search.{" "}
+        <Link href="/shop" className="text-red-hot">
+          Reset filters →
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <p className="mt-2 text-muted">{products.length} machines ready to roll.</p>
+      <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 md:gap-6">
+        {products.map((p) => (
+          <ProductCard key={p.id} product={p} />
+        ))}
+      </div>
+    </>
+  );
+}
+
+export default async function Shop({
+  searchParams,
+}: {
+  searchParams: Promise<{ cat?: string; q?: string; sort?: string }>;
+}) {
+  const { cat, q, sort } = await searchParams;
+
   const chip = (href: string, label: string, active: boolean) => (
     <Link
       href={href}
@@ -46,13 +93,11 @@ export default async function Shop({
   return (
     <>
       <Header />
+      {/* Shell renders instantly */}
       <main className="mx-auto max-w-7xl px-4 py-10">
         <h1 className="display text-4xl text-white">
           The <span className="text-red-hot">Garage</span>
         </h1>
-        <p className="mt-2 text-muted">
-          {products.length} machines ready to roll.
-        </p>
 
         <div className="mt-6 flex flex-wrap items-center gap-3">
           {chip("/shop", "All", !cat)}
@@ -81,17 +126,19 @@ export default async function Shop({
           </form>
         </div>
 
-        {products.length === 0 ? (
-          <div className="mt-16 rounded-xl border border-line bg-card p-12 text-center text-muted">
-            No cars matched your search. <Link href="/shop" className="text-red-hot">Reset filters →</Link>
-          </div>
-        ) : (
-          <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 md:gap-6">
-            {products.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
-          </div>
-        )}
+        {/* Products stream in with skeleton */}
+        <Suspense
+          fallback={
+            <>
+              <p className="mt-2 text-muted animate-pulse">Loading products...</p>
+              <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 md:gap-6">
+                {Array.from({ length: 8 }).map((_, i) => <CardSkeleton key={i} />)}
+              </div>
+            </>
+          }
+        >
+          <ProductGrid cat={cat} q={q} sort={sort} />
+        </Suspense>
       </main>
       <Footer />
     </>
