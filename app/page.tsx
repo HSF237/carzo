@@ -5,7 +5,7 @@ import ProductCard from "@/components/ProductCard";
 import { getProducts } from "@/lib/db";
 import { inr } from "@/lib/format";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60; // re-fetch products every 60 seconds
 
 export default async function Home() {
   const products = await getProducts();

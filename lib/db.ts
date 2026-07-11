@@ -20,11 +20,12 @@ import { seedProducts } from "./seed";
  * Replaces the SQL database implementation and supports auto-seeding.
  */
 
-let isInitialized = false;
+// Run seeding once when the module loads — doesn't block queries
+let seedingDone = false;
+let seedingPromise: Promise<void> | null = null;
 
-async function ensure() {
-  if (isInitialized) return;
-
+async function seedIfNeeded() {
+  if (seedingDone) return;
   try {
     const productsSnapshot = await getDocs(collection(db, "products"));
     if (productsSnapshot.empty) {
@@ -32,18 +33,21 @@ async function ensure() {
       const batch = writeBatch(db);
       for (const p of seedProducts) {
         const docRef = doc(db, "products", p.id);
-        batch.set(docRef, {
-          ...p,
-          featured: !!p.featured
-        });
+        batch.set(docRef, { ...p, featured: !!p.featured });
       }
       await batch.commit();
       console.log("✅ Seeding complete!");
     }
-    isInitialized = true;
+    seedingDone = true;
   } catch (err) {
-    console.error("❌ Failed to verify or seed Firestore:", err);
+    console.error("❌ Seeding error:", err);
   }
+}
+
+async function ensure() {
+  if (seedingDone) return;
+  if (!seedingPromise) seedingPromise = seedIfNeeded();
+  await seedingPromise;
 }
 
 // ---------- Products ----------
