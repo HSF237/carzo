@@ -42,6 +42,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         {item("/admin", "📊 Dashboard")}
         {item("/admin/products", "🏎️ Products")}
         {item("/admin/orders", "📦 Orders")}
+        {item("/admin/messages", "📨 Messages")}
       </nav>
       <div className="mt-auto space-y-2">
         <Link href="/" className="block text-xs text-muted hover:text-white">

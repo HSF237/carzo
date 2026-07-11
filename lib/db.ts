@@ -1,5 +1,5 @@
 import { adminDb } from "./firebase-admin";
-import { Product, Order, OrderItem } from "./types";
+import { Product, Order, OrderItem, ContactMessage } from "./types";
 import { seedProducts } from "./seed";
 import { normalizeImageUrl } from "./image";
 
@@ -247,4 +247,45 @@ export async function updateOrderStatus(id: string, status: Order["status"]): Pr
     status: status,
     createdAt: data.createdAt
   };
+}
+
+// ---------- Contact messages ----------
+export async function addMessage(m: { name: string; contact: string; message: string }): Promise<void> {
+  await ensure();
+  const id = "m" + Date.now().toString(36);
+  await adminDb.collection("messages").doc(id).set({
+    name: m.name,
+    contact: m.contact,
+    message: m.message,
+    read: false,
+    createdAt: new Date().toISOString(),
+  });
+}
+
+export async function getMessages(): Promise<ContactMessage[]> {
+  await ensure();
+  try {
+    const snap = await adminDb.collection("messages").orderBy("createdAt", "desc").get();
+    const out: ContactMessage[] = [];
+    snap.forEach((doc) => {
+      const data = doc.data();
+      out.push({
+        id: doc.id,
+        name: data.name,
+        contact: data.contact,
+        message: data.message,
+        read: !!data.read,
+        createdAt: data.createdAt,
+      });
+    });
+    return out;
+  } catch (err) {
+    console.error("Firestore getMessages failed:", err);
+    return [];
+  }
+}
+
+export async function markMessageRead(id: string): Promise<void> {
+  await ensure();
+  await adminDb.collection("messages").doc(id).update({ read: true });
 }

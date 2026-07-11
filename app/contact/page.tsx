@@ -1,5 +1,6 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import ContactForm from "@/components/ContactForm";
 
 export const metadata = { title: "Contact — Carzo" };
 
@@ -35,41 +36,7 @@ export default function Contact() {
             </div>
           </div>
 
-          <form
-            className="space-y-4 rounded-xl border border-line bg-card p-6"
-            action={`mailto:${contactEmail}`}
-            method="post"
-            encType="text/plain"
-          >
-            <div>
-              <label className="text-sm text-muted">Your name</label>
-              <input
-                name="name"
-                required
-                className="mt-1 w-full rounded-md border border-line bg-bg-soft px-3 py-2 text-white focus:border-red-brand focus:outline-none"
-              />
-            </div>
-            <div>
-              <label className="text-sm text-muted">Phone or email</label>
-              <input
-                name="contact"
-                required
-                className="mt-1 w-full rounded-md border border-line bg-bg-soft px-3 py-2 text-white focus:border-red-brand focus:outline-none"
-              />
-            </div>
-            <div>
-              <label className="text-sm text-muted">Message</label>
-              <textarea
-                name="message"
-                rows={4}
-                required
-                className="mt-1 w-full rounded-md border border-line bg-bg-soft px-3 py-2 text-white focus:border-red-brand focus:outline-none"
-              />
-            </div>
-            <button className="skew-chip btn-red w-full rounded-sm px-6 py-3 font-bold text-white">
-              <span>Send Message 🏁</span>
-            </button>
-          </form>
+          <ContactForm />
         </div>
       </main>
       <Footer />

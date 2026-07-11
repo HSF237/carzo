@@ -40,3 +40,12 @@ export interface Order {
   status: "new" | "confirmed" | "shipped" | "delivered" | "cancelled";
   createdAt: string;
 }
+
+export interface ContactMessage {
+  id: string;
+  name: string;
+  contact: string;
+  message: string;
+  read: boolean;
+  createdAt: string;
+}
