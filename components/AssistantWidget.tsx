@@ -179,9 +179,9 @@ export default function AssistantWidget() {
             setOpen(true);
             setTeaser(false);
           }}
-          className="teaser-pop mb-2 mr-1 rounded-2xl rounded-br-sm border border-line bg-card px-3 py-2 text-xs font-semibold text-white shadow-lg"
+          className="teaser-pop mb-2 mr-1 max-w-[200px] rounded-2xl rounded-br-sm border border-line bg-card px-3 py-2 text-left text-xs font-semibold text-white shadow-lg"
         >
-          Need help? 🏁
+          Hey! I&apos;m Turbo, your Carzo assistant 🏁 Need help?
         </button>
       )}
 
