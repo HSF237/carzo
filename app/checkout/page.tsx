@@ -104,6 +104,8 @@ export default function CheckoutPage() {
               const finalPayload = {
                 ...payload,
                 paymentId: response.razorpay_payment_id,
+                razorpayOrderId: response.razorpay_order_id,
+                razorpaySignature: response.razorpay_signature,
               };
 
               const res = await fetch("/api/orders", {
