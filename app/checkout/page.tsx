@@ -4,23 +4,9 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useCart } from "@/components/CartProvider";
 import { inr } from "@/lib/format";
-
-function loadRazorpayScript(): Promise<boolean> {
-  return new Promise((resolve) => {
-    if ((window as any).Razorpay) {
-      resolve(true);
-      return;
-    }
-    const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.onload = () => resolve(true);
-    script.onerror = () => resolve(false);
-    document.body.appendChild(script);
-  });
-}
 
 export default function CheckoutPage() {
   const { lines, total, clear } = useCart();
@@ -28,13 +14,30 @@ export default function CheckoutPage() {
   const [submitting, setSubmitting] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"cod" | "online">("cod");
   const [error, setError] = useState("");
+  const [utr, setUtr] = useState("");
+  const [qrUrl, setQrUrl] = useState("");
+  const [qrLoading, setQrLoading] = useState(false);
 
   const shipping = total >= 999 ? 0 : 79;
   const grandTotal = total + shipping;
 
+  useEffect(() => {
+    if (paymentMethod !== "online" || qrUrl) return;
+    setQrLoading(true);
+    fetch(`/api/upi-qr?amount=${grandTotal}`)
+      .then((r) => r.json())
+      .then((data) => setQrUrl(data.dataUrl || ""))
+      .catch(() => setError("Failed to generate payment QR code."))
+      .finally(() => setQrLoading(false));
+  }, [paymentMethod, grandTotal, qrUrl]);
+
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (lines.length === 0) return;
+    if (paymentMethod === "online" && !utr.trim()) {
+      setError("Enter the UPI transaction reference (UTR) number after paying.");
+      return;
+    }
     setSubmitting(true);
     setError("");
 
@@ -61,97 +64,25 @@ export default function CheckoutPage() {
       items,
       total: grandTotal,
       paymentMethod,
+      paymentId: paymentMethod === "online" ? utr.trim() : undefined,
     };
 
-    if (paymentMethod === "online") {
-      try {
-        const loaded = await loadRazorpayScript();
-        if (!loaded) {
-          throw new Error("Failed to load Razorpay payment gateway script. Check your internet connection.");
-        }
-
-        const rzpOrderRes = await fetch("/api/checkout/razorpay", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ amount: grandTotal }),
-        });
-
-        if (!rzpOrderRes.ok) {
-          const errData = await rzpOrderRes.json();
-          throw new Error(errData.error || "Failed to initialize payment gateway.");
-        }
-
-        const razorpayOrder = await rzpOrderRes.json();
-
-        const options = {
-          key: razorpayOrder.keyId,
-          amount: razorpayOrder.amount,
-          currency: razorpayOrder.currency,
-          name: "Carzo Store",
-          description: "Scale Models & RC Cars checkout",
-          order_id: razorpayOrder.id,
-          prefill: {
-            name: customer.name,
-            contact: customer.phone,
-            email: customer.email || "",
-          },
-          theme: {
-            color: "#e10600",
-          },
-          handler: async function (response: any) {
-            setSubmitting(true);
-            try {
-              const finalPayload = {
-                ...payload,
-                paymentId: response.razorpay_payment_id,
-                razorpayOrderId: response.razorpay_order_id,
-                razorpaySignature: response.razorpay_signature,
-              };
-
-              const res = await fetch("/api/orders", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(finalPayload),
-              });
-
-              if (!res.ok) throw new Error("Order creation failed");
-              const { id } = await res.json();
-              clear();
-              router.push(`/checkout/success?id=${id}`);
-            } catch (err) {
-              setError("Payment was successful, but we failed to register the order. Please contact our support crew.");
-              setSubmitting(false);
-            }
-          },
-          modal: {
-            ondismiss: function () {
-              setSubmitting(false);
-            },
-          },
-        };
-
-        const rzp = new (window as any).Razorpay(options);
-        rzp.open();
-      } catch (err: any) {
-        setError(err.message || "Failed to initiate online payment.");
-        setSubmitting(false);
+    try {
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "Order failed");
       }
-    } else {
-      // Cash on Delivery
-      try {
-        const res = await fetch("/api/orders", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        if (!res.ok) throw new Error("Order failed");
-        const { id } = await res.json();
-        clear();
-        router.push(`/checkout/success?id=${id}`);
-      } catch {
-        setError("Something went wrong placing your order. Please try again.");
-        setSubmitting(false);
-      }
+      const { id } = await res.json();
+      clear();
+      router.push(`/checkout/success?id=${id}`);
+    } catch (err: any) {
+      setError(err.message || "Something went wrong placing your order. Please try again.");
+      setSubmitting(false);
     }
   }
 
@@ -269,11 +200,45 @@ export default function CheckoutPage() {
                     className="accent-red-600"
                   />
                   <div>
-                    <p className="font-semibold text-white">💳 Pay Online</p>
-                    <p className="text-xs text-muted">UPI, Cards, Netbanking via Razorpay.</p>
+                    <p className="font-semibold text-white">📱 Pay via UPI</p>
+                    <p className="text-xs text-muted">Scan the QR with any UPI app.</p>
                   </div>
                 </label>
               </div>
+
+              {paymentMethod === "online" && (
+                <div className="mt-5 flex flex-col items-center gap-4 rounded-md border border-line bg-bg-soft p-5 sm:flex-row sm:items-start">
+                  <div className="flex h-40 w-40 shrink-0 items-center justify-center rounded-md bg-white p-2">
+                    {qrLoading && <span className="text-xs text-muted">Loading QR…</span>}
+                    {!qrLoading && qrUrl && (
+                      <img src={qrUrl} alt="UPI payment QR code" className="h-full w-full" />
+                    )}
+                    {!qrLoading && !qrUrl && (
+                      <span className="text-center text-xs text-muted">QR unavailable</span>
+                    )}
+                  </div>
+                  <div className="w-full">
+                    <p className="text-sm text-white">
+                      Scan and pay <span className="font-bold">{inr(grandTotal)}</span> using GPay, PhonePe,
+                      Paytm or any UPI app.
+                    </p>
+                    <label className="mt-3 block text-sm text-muted">
+                      UPI transaction reference (UTR) *
+                      <input
+                        value={utr}
+                        onChange={(e) => setUtr(e.target.value)}
+                        placeholder="12-digit reference from your UPI app"
+                        required={paymentMethod === "online"}
+                        className="mt-1 w-full rounded-md border border-line bg-bg px-3 py-2 text-white focus:border-red-brand focus:outline-none"
+                      />
+                    </label>
+                    <p className="mt-1 text-xs text-muted">
+                      After paying, your UPI app shows a reference/UTR number — enter it here so we can confirm your
+                      payment.
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
             {error && (
@@ -290,7 +255,7 @@ export default function CheckoutPage() {
                 {submitting
                   ? "Processing..."
                   : paymentMethod === "online"
-                  ? `Pay Online — ${inr(grandTotal)}`
+                  ? `I've Paid — ${inr(grandTotal)}`
                   : `Place COD Order — ${inr(grandTotal)}`}
               </span>
             </button>

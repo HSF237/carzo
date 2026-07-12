@@ -33,6 +33,13 @@ export default async function AdminOrders() {
               <span className="text-sm text-muted">
                 {new Date(o.createdAt).toLocaleString("en-IN")}
               </span>
+              <span
+                className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${
+                  o.paymentMethod === "online" ? "bg-emerald-600/20 text-emerald-400" : "bg-line text-muted"
+                }`}
+              >
+                {o.paymentMethod === "online" ? "UPI" : "COD"}
+              </span>
               <span className="ml-auto font-bold text-white">{inr(o.total)}</span>
               <OrderStatusSelect id={o.id} status={o.status} />
             </summary>
@@ -51,6 +58,14 @@ export default async function AdminOrders() {
                     </li>
                   ))}
                 </ul>
+                {o.paymentMethod === "online" && (
+                  <p className="mt-3 text-xs text-muted">
+                    UPI Reference (UTR):{" "}
+                    <span className="font-mono text-white">{o.paymentId || "—"}</span>
+                    <br />
+                    Verify this against your UPI app/bank statement before confirming.
+                  </p>
+                )}
               </div>
               <div>
                 <h3 className="text-xs font-bold uppercase tracking-widest text-red-hot">

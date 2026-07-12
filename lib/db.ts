@@ -182,6 +182,7 @@ export async function getOrders(): Promise<Order[]> {
         items: data.items,
         total: Number(data.total),
         paymentMethod: data.paymentMethod,
+        paymentId: data.paymentId || undefined,
         status: data.status,
         createdAt: data.createdAt
       });

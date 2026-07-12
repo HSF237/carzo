@@ -78,7 +78,8 @@ export async function sendOrderNotificationEmail(order: Order) {
       </table>
 
       <p style="margin-top: 20px;">
-        <strong>Payment Method:</strong> ${order.paymentMethod.toUpperCase()}<br>
+        <strong>Payment Method:</strong> ${order.paymentMethod === "online" ? "UPI (QR)" : "Cash on Delivery"}<br>
+        ${order.paymentId ? `<strong>UPI Reference (UTR):</strong> ${order.paymentId}<br>` : ""}
         <strong>Status:</strong> Pending Confirmation
       </p>
 
