@@ -4,6 +4,7 @@ import "./globals.css";
 import { CartProvider } from "@/components/CartProvider";
 import SplashScreen from "@/components/SplashScreen";
 import AssistantWidget from "@/components/AssistantWidget";
+import MusicPlayer from "@/components/MusicPlayer";
 
 const orbitron = Orbitron({
   subsets: ["latin"],
@@ -32,6 +33,7 @@ export default function RootLayout({
         <SplashScreen />
         <CartProvider>{children}</CartProvider>
         <AssistantWidget />
+        <MusicPlayer />
       </body>
     </html>
   );
