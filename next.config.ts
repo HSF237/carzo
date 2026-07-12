@@ -22,6 +22,7 @@ const nextConfig: NextConfig = {
   },
   // Compress all responses
   compress: true,
+  devIndicators: false,
 };
 
 export default nextConfig;
