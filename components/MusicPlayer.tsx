@@ -6,26 +6,27 @@ const STORAGE_KEY = "carzo_music_muted";
 
 export default function MusicPlayer() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  // Always start muted: browsers silently refuse to make audio audible
+  // without a real click, no matter what a stored preference says, so
+  // trusting localStorage here just desyncs the icon from reality.
   const [muted, setMuted] = useState(true);
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    setMuted(stored === null ? true : stored === "true");
-    setReady(true);
-  }, []);
 
   useEffect(() => {
     const audio = audioRef.current;
-    if (!audio || !ready) return;
-    audio.muted = muted;
+    if (!audio) return;
+    audio.muted = true;
     audio.volume = 0.4;
     audio.play().catch(() => {});
-  }, [muted, ready]);
+  }, []);
 
   function toggle() {
+    const audio = audioRef.current;
     setMuted((prev) => {
       const next = !prev;
+      if (audio) {
+        audio.muted = next;
+        if (!next) audio.play().catch(() => {});
+      }
       localStorage.setItem(STORAGE_KEY, String(next));
       return next;
     });
