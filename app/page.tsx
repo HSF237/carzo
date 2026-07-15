@@ -77,6 +77,21 @@ async function RcProducts() {
   );
 }
 
+async function FramesProducts() {
+  const products = await getProducts();
+  const frames = products.filter((p) => p.category === "frames").slice(0, 4);
+  if (!frames.length) return null;
+  return (
+    <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
+      {frames.map((p, i) => (
+        <Reveal key={p.id} index={i}>
+          <ProductCard product={p} />
+        </Reveal>
+      ))}
+    </div>
+  );
+}
+
 // ── Page ─────────────────────────────────────────────────────────────────────
 export default function Home() {
   return (
@@ -168,7 +183,7 @@ export default function Home() {
         </section>
 
         {/* Category banners — no data, instant */}
-        <section className="mx-auto grid max-w-7xl gap-6 px-4 md:grid-cols-2">
+        <section className="mx-auto grid max-w-7xl gap-6 px-4 md:grid-cols-3">
           <Link
             href="/shop?cat=diecast"
             className="group relative overflow-hidden rounded-2xl border border-line bg-gradient-to-br from-card to-bg-soft p-10"
@@ -205,6 +220,24 @@ export default function Home() {
               35km/h
             </span>
           </Link>
+          <Link
+            href="/shop?cat=frames"
+            className="group relative overflow-hidden rounded-2xl border border-line bg-gradient-to-br from-card to-bg-soft p-10"
+          >
+            <p className="text-xs font-bold uppercase tracking-widest text-red-hot">
+              Starting at just {inr(800)}
+            </p>
+            <h3 className="display mt-2 text-4xl text-white">3D Frames</h3>
+            <p className="mt-2 max-w-xs text-sm text-muted">
+              Hand-crafted display frames — your favorite ride, mounted and ready to hang.
+            </p>
+            <span className="mt-6 inline-block text-sm font-bold text-red-hot transition group-hover:translate-x-2">
+              Shop 3D frames →
+            </span>
+            <span className="display absolute -bottom-4 -right-2 select-none text-8xl text-white/5">
+              🖼️
+            </span>
+          </Link>
         </section>
 
         {/* Diecast section */}
@@ -223,7 +256,7 @@ export default function Home() {
         </section>
 
         {/* RC section */}
-        <section className="mx-auto max-w-7xl px-4 pb-16">
+        <section className="mx-auto max-w-7xl px-4 py-16">
           <div className="flex items-end justify-between">
             <h2 className="display text-3xl text-white">
               Full <span className="text-red-hot">throttle</span>
@@ -234,6 +267,21 @@ export default function Home() {
           </div>
           <Suspense fallback={<GridSkeleton count={4} />}>
             <RcProducts />
+          </Suspense>
+        </section>
+
+        {/* 3D Frames section */}
+        <section className="mx-auto max-w-7xl px-4 pb-16">
+          <div className="flex items-end justify-between">
+            <h2 className="display text-3xl text-white">
+              Framed &amp; <span className="text-red-hot">ready</span>
+            </h2>
+            <Link href="/shop?cat=frames" className="text-sm text-muted hover:text-white">
+              All 3D frames →
+            </Link>
+          </div>
+          <Suspense fallback={<GridSkeleton count={4} />}>
+            <FramesProducts />
           </Suspense>
         </section>
 

@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
   const product = await addProduct({
     name: b.name,
     slug,
-    category: b.category === "rc" ? "rc" : "diecast",
+    category: b.category === "rc" ? "rc" : b.category === "frames" ? "frames" : "diecast",
     price: Number(b.price),
     mrp: Number(b.mrp || b.price),
     image: b.image,

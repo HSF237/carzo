@@ -14,7 +14,7 @@ export async function PUT(
   const updated = await updateProduct(id, {
     name: b.name,
     slug: b.slug || undefined,
-    category: b.category === "rc" ? "rc" : "diecast",
+    category: b.category === "rc" ? "rc" : b.category === "frames" ? "frames" : "diecast",
     price: Number(b.price),
     mrp: Number(b.mrp || b.price),
     image: b.image,

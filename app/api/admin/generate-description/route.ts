@@ -26,7 +26,13 @@ export async function POST(req: NextRequest) {
 
   const details = [
     `Name: ${name}`,
-    `Category: ${category === "rc" ? "RC Car" : "Diecast scale model"}`,
+    `Category: ${
+      category === "rc"
+        ? "RC Car"
+        : category === "frames"
+        ? "3D framed diecast car display piece (a small model car mounted in a wall frame)"
+        : "Diecast scale model"
+    }`,
     price ? `Price: ₹${price}` : null,
     scale ? `Scale: ${scale}` : null,
     brandLine ? `Series: ${brandLine}` : null,

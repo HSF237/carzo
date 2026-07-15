@@ -17,6 +17,7 @@ export default function Footer() {
           <ul className="mt-3 space-y-2 text-sm text-muted">
             <li><Link className="hover:text-white" href="/shop?cat=diecast">Scale Models</Link></li>
             <li><Link className="hover:text-white" href="/shop?cat=rc">RC Cars</Link></li>
+            <li><Link className="hover:text-white" href="/shop?cat=frames">3D Car Frames</Link></li>
             <li><Link className="hover:text-white" href="/shop">All Products</Link></li>
           </ul>
         </div>

@@ -22,12 +22,21 @@ export default function ProductCard({ product }: { product: Product }) {
           </span>
         )}
         <span className="absolute right-3 top-3 rounded-sm bg-black/60 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white">
-          {product.category === "rc" ? "RC" : product.scale ?? "Diecast"}
+          {product.category === "rc"
+            ? "RC"
+            : product.category === "frames"
+            ? "3D Frame"
+            : product.scale ?? "Diecast"}
         </span>
       </div>
       <div className="p-4">
         <p className="text-[11px] font-semibold uppercase tracking-widest text-red-hot">
-          {product.brandLine ?? (product.category === "rc" ? "RC Cars" : "Scale Models")}
+          {product.brandLine ??
+            (product.category === "rc"
+              ? "RC Cars"
+              : product.category === "frames"
+              ? "3D Frames"
+              : "Scale Models")}
         </p>
         <h3 className="mt-1 line-clamp-1 font-semibold text-white">{product.name}</h3>
         <div className="mt-2 flex items-baseline gap-2">

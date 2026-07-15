@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { addOrder } from "@/lib/db";
 import { sendOrderNotificationEmail } from "@/lib/mail";
+import { sendOrderWhatsAppAlert } from "@/lib/whatsapp";
 
 export async function POST(req: NextRequest) {
   try {
@@ -39,6 +40,12 @@ export async function POST(req: NextRequest) {
       await sendOrderNotificationEmail(order);
     } catch (mailErr) {
       console.error("Failed to send order notification email:", mailErr);
+    }
+
+    try {
+      await sendOrderWhatsAppAlert(order);
+    } catch (waErr) {
+      console.error("Failed to send WhatsApp order alert:", waErr);
     }
 
     return NextResponse.json({ id: order.id }, { status: 201 });

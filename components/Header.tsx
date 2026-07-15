@@ -11,6 +11,7 @@ const nav = [
   { href: "/shop", label: "Shop", icon: "🛒" },
   { href: "/shop?cat=diecast", label: "Scale Models", icon: "🏎️" },
   { href: "/shop?cat=rc", label: "RC Cars", icon: "🎮" },
+  { href: "/shop?cat=frames", label: "3D Frames", icon: "🖼️" },
   { href: "/about", label: "About", icon: "ℹ️" },
   { href: "/contact", label: "Contact", icon: "📞" },
 ];

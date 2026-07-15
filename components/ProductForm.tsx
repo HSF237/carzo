@@ -123,6 +123,7 @@ export default function ProductForm({ product }: { product?: Product }) {
           >
             <option value="diecast">Scale Model (Diecast)</option>
             <option value="rc">RC Car</option>
+            <option value="frames">3D Car Frame</option>
           </select>
         </div>
         <div>

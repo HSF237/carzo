@@ -44,7 +44,12 @@ export default async function ProductPage({
           </div>
           <div>
             <p className="text-xs font-bold uppercase tracking-widest text-red-hot">
-              {product.brandLine ?? (product.category === "rc" ? "RC Cars" : "Scale Models")}
+              {product.brandLine ??
+                (product.category === "rc"
+                  ? "RC Cars"
+                  : product.category === "frames"
+                  ? "3D Frames"
+                  : "Scale Models")}
               {product.scale ? ` · ${product.scale} scale` : ""}
             </p>
             <h1 className="display mt-2 text-4xl text-white">{product.name}</h1>

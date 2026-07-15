@@ -1,4 +1,4 @@
-export type Category = "diecast" | "rc";
+export type Category = "diecast" | "rc" | "frames";
 
 export interface Product {
   id: string;

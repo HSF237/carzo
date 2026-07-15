@@ -33,7 +33,7 @@ async function ProductGrid({
 }) {
   let products = await getProducts();
 
-  if (cat === "diecast" || cat === "rc") {
+  if (cat === "diecast" || cat === "rc" || cat === "frames") {
     products = products.filter((p) => p.category === (cat as Category));
   }
   if (q) {
@@ -106,6 +106,7 @@ export default async function Shop({
           {chip("/shop", "All", !cat)}
           {chip("/shop?cat=diecast", "Scale Models", cat === "diecast")}
           {chip("/shop?cat=rc", "RC Cars", cat === "rc")}
+          {chip("/shop?cat=frames", "3D Frames", cat === "frames")}
           <form action="/shop" className="ml-auto flex gap-2">
             {cat && <input type="hidden" name="cat" value={cat} />}
             <input

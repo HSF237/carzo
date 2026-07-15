@@ -11,20 +11,26 @@ interface Node {
   next?: string[];
 }
 
-const ROOT = ["shop-diecast", "shop-rc", "order-status", "payment-cod", "shipping", "warranty", "human"];
+const ROOT = ["shop-diecast", "shop-rc", "shop-frames", "order-status", "payment-cod", "shipping", "warranty", "human"];
 
 const NODES: Record<string, Node> = {
   "shop-diecast": {
     label: "🏎️ Shop Scale Models",
     reply: "We've got 1:64 and 1:43 die-cast legends starting at just ₹85! Tap below to browse.",
     cta: { href: "/shop?cat=diecast", label: "Browse Scale Models →" },
-    next: ["shop-rc", "order-status", "human"],
+    next: ["shop-rc", "shop-frames", "human"],
   },
   "shop-rc": {
     label: "🎮 Shop RC Cars",
     reply: "Our RC beasts hit up to 35 km/h with rechargeable batteries. Ready to race?",
     cta: { href: "/shop?cat=rc", label: "Browse RC Cars →" },
     next: ["shop-diecast", "warranty", "human"],
+  },
+  "shop-frames": {
+    label: "🖼️ Shop 3D Car Frames",
+    reply: "Hand-crafted 3D car frames make a great display piece — your favorite ride, framed and ready to hang!",
+    cta: { href: "/shop?cat=frames", label: "Browse 3D Frames →" },
+    next: ["shop-diecast", "shop-rc", "human"],
   },
   "order-status": {
     label: "📦 Where's my order?",
@@ -36,7 +42,7 @@ const NODES: Record<string, Node> = {
   "payment-cod": {
     label: "💵 Payment & COD",
     reply:
-      "Cash on Delivery is available everywhere in India — just pay when your box arrives! UPI, Cards and Netbanking also work at checkout.",
+      "Cash on Delivery is available everywhere in India — just pay when your box arrives! Or scan the UPI QR at checkout to pay upfront with any UPI app.",
     next: ["shipping", "order-status", "human"],
   },
   shipping: {
@@ -53,7 +59,7 @@ const NODES: Record<string, Node> = {
     label: "💬 Talk to a human",
     reply: "Our crew's ready to help! Tap below and we'll sort you out.",
     cta: { href: "/contact", label: "Contact Carzo →" },
-    next: ["shop-diecast", "shop-rc"],
+    next: ["shop-diecast", "shop-rc", "shop-frames"],
   },
 };
 
